@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <omp.h>
 #include "blake.h"
 #include "createRT.h"
 
@@ -16,6 +17,7 @@ int main(int argc, char **argv) {
 /* Parallel creation of NUM_OF_TABLES rainbow tables */
 #pragma omp parallel for
     for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
+        printf("creating %zu of %zu\n", table_id, num_of_tables);
 		create_RT(rainbow_size, table_id, chain_len);
     }
 
