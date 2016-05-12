@@ -9,7 +9,7 @@ all: rainbow
 
 rainbow: $(OBJS)
 	$(CC) -o $(OUT1) mainRT.o createRT.o blake256.o $(FLAGS) 
-	$(CPP) -o $(OUT2) rainbowAttack.o $(FLAGS) 
+	$(CPP) -o $(OUT2) rainbowAttack.o createRT.o blake256.o $(FLAGS) 
 
 rainbowAttack.o: rainbowAttack.cpp createRT.c blake.h createRT.h
 	$(CPP) -c rainbowAttack.cpp -O3
