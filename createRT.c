@@ -37,7 +37,7 @@ uint8_t* rand_string(int size) {
     return str;
 }
 
-uint8_t* reduction(uint8_t* h) {
+char* reduction(uint8_t* h) {
     unsigned char sha1hash[SHA_DIGEST_LENGTH];
     SHA1(h, sizeof(h), sha1hash);
     char* pass = calloc(7, sizeof(char));
@@ -65,8 +65,8 @@ uint8_t* create_chain(const uint8_t* initPass, size_t chainLen) {
     blake256_hash(h, initPass, 6);
     // printf("%s, ", initPass); fprint_hash(h, 32); printf("\n");
     for (i = 1 ; i < chainLen ; i++) {
-        uint8_t *pass = reduction(h);   /* reduction(h) = pass*/
-        blake256_hash(h, pass, 6);      /* blake(pass) = h */
+        char *pass = reduction(h);   /* reduction(h) = pass*/
+        blake256_hash(h, (uint8_t*) pass, 6);      /* blake(pass) = h */
         // printf("%s, ", pass); fprint_hash(h, 32); printf("\n");
         free(pass);
     }
