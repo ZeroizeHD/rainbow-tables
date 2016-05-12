@@ -16,33 +16,88 @@ extern "C" {
 
 using namespace std;
 
-char* search_chain(string first_pass, size_t chain_len) {
+uint8_t* string2uint8_t(string str, size_t len) {
+    uint8_t *ret = (uint8_t*) calloc((len/2)+1, sizeof(uint8_t));
+    char *t = &str[0];
+    for (int i = 0, j = 0 ; i < len ; i++) {
+        uint8_t tmp;
+        switch (t[i]) {
+            case 'a': tmp = 10; break;
+            case 'b': tmp = 11; break;
+            case 'c': tmp = 12; break;
+            case 'd': tmp = 13; break;
+            case 'e': tmp = 14; break;
+            case 'f': tmp = 15; break;
+            default: tmp = t[i] - '0';
+        }
+        if (i % 2) {
+            ret[j] += tmp;
+            j++;
+        } else {
+            ret[j] += tmp*16;
+        }
+    }
+    ret[32] = '\0';
+    return ret;
+}
 
+string uint8_t2string(uint8_t * h_uint8, size_t len) {
+    char *str = (char *) malloc(len * sizeof(char));
+    char *strptr = str;
+    for (int j = 0; j < len/2; j++) {
+        sprintf(strptr, "%02x", h_uint8[j]);
+        strptr += 2;
+    }
+    string h(str);
+    return h;
+}
+
+char* search_chain(string first_pass_str, size_t chain_len, string hass2find) {
+
+    uint8_t *h_uint8 = (uint8_t *) malloc(32 * sizeof(uint8_t));
+    char *pass = &first_pass_str[0];
+    blake256_hash(h_uint8, (uint8_t *) pass, 6);
+    string h = uint8_t2string(h_uint8, 64);
+
+    while (hass2find.compare(h) != 0) {
+        uint8_t *hash = string2uint8_t(h, 64);
+        pass = reduction(hash, 0);
+        blake256_hash(h_uint8, (uint8_t *) pass, 6);
+        h = uint8_t2string(h_uint8, 64);
+    }
+    
+    return pass;
 };
 
-char* search_RT(string h, map<string, string> chain_dict, size_t chain_len) {
-	// int i = 0;
-	// const uint8_t* temp = reinterpret_cast<const uint8_t*>(h.c_str());
-	// uint8_t* hash = (uint8_t *) malloc(32 * sizeof(uint8_t));
-	// memcpy(hash, temp, 32);
+char* search_RT(string hstr, map<string, string> chain_dict, size_t chain_len) {
+	int i = 0;
+	string h = hstr;
 
-	// while (i++ < chain_len) {
+	while (i < chain_len) {
 		string first_pass = chain_dict[h];
-		if (first_pass != "") { /* if found*/  
-			return search_chain(first_pass, chain_len);
-		} else { 
-			const uint8_t *hash2 = reinterpret_cast<const uint8_t*>(&h[0]);
-			uint8_t *hash = (uint8_t*) malloc(64 * sizeof(uint8_t));
-			memcpy(hash, hash2, 64);
-        	char *pass = reduction(hash);
-        	cout << "--" << hash << "--" << endl;
-        	cout << "--" << pass << "--" << endl;
 
-        	blake256_hash(hash, (uint8_t*)pass, 6);
+		if (first_pass != "") { /* if found*/ 
+            printf("Eureka!\n");
+            return search_chain(first_pass, chain_len, h);
+        } else { 
+            uint8_t *hash = string2uint8_t(h, 64);
+
+            char *pass = reduction(hash, i);
+
+            uint8_t *new_h_uint8 = (uint8_t *) malloc(32 * sizeof(uint8_t));
+            blake256_hash(new_h_uint8, (uint8_t*) pass, 6);
+
+            // fprint_hash(NULL, new_h_uint8, 32);
+            // cout << endl;
+            h = uint8_t2string(new_h_uint8, 64);
+            
+            cout << " == " << h << endl;
 
 
-		}
-	// }
+        }
+        i++;
+    }
+    printf("@@\n");
 	return NULL;
 }
 
@@ -54,7 +109,7 @@ int main(int argc, char **argv) {
     size_t chain_len = CHAIN_LEN;
 
 	/* for all rainbow tables */    
-	for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
+	for (table_id = 0 ; table_id < 1 ; table_id++) {
 		map<string, string> chain_dict;   
 	    char table_name[15];
     	sprintf(table_name, "rainbow_%zu.csv", table_id);
@@ -67,7 +122,7 @@ int main(int argc, char **argv) {
 		while (!file.eof()) {
 			file >> first_pass;
 			file >> last_h;
-	        cout << "PASS: " << first_pass << " H: " << last_h << "\n";
+	        cout << "PASS:-" << first_pass << "- H:-" << last_h << "-\n";
 	        chain_dict.insert(make_pair(last_h, first_pass));
 		}
 
@@ -78,7 +133,7 @@ int main(int argc, char **argv) {
 		ifstream file2("example.csv");
 		file2 >> h_str;
 		// cout << h_str << "-->" << chain_dict[h_str] << endl;
-		char* pass = search_RT(h_str, chain_dict, chain_len);
+		cout << "The pass you were looking for is " << search_RT(h_str, chain_dict, chain_len) << "\n";
 
 	}
 
