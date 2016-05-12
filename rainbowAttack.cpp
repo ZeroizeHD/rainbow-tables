@@ -49,23 +49,32 @@ string uint8_t2string(uint8_t * h_uint8, size_t len) {
         strptr += 2;
     }
     string h(str);
+    free(str);
     return h;
 }
 
 char* search_chain(string first_pass_str, size_t chain_len, string hass2find) {
-
     uint8_t *h_uint8 = (uint8_t *) malloc(32 * sizeof(uint8_t));
-    char *pass = &first_pass_str[0];
+    char *pass = (char *) malloc(7 * sizeof(char));
+    char *tmp = &first_pass_str[0];
+    memcpy(pass, tmp, 7);
+    pass[6] = '\0';
     blake256_hash(h_uint8, (uint8_t *) pass, 6);
     string h = uint8_t2string(h_uint8, 64);
-
+    size_t i = 0;
     while (hass2find.compare(h) != 0) {
+        free(pass);
         uint8_t *hash = string2uint8_t(h, 64);
-        pass = reduction(hash, 0);
+        pass = reduction(hash, i);
         blake256_hash(h_uint8, (uint8_t *) pass, 6);
         h = uint8_t2string(h_uint8, 64);
+        // cout << pass << "\t"<< h << endl;
+        if (i > CHAIN_LEN) {
+            fprintf(stderr, "kati malakia egine\n");
+            exit(EXIT_FAILURE);
+        }
+        i++;
     }
-    
     return pass;
 };
 
@@ -77,23 +86,23 @@ char* search_RT(string hstr, map<string, string> chain_dict, size_t chain_len) {
 		string first_pass = chain_dict[h];
 
 		if (first_pass != "") { /* if found*/ 
-            printf("Eureka!\n");
-            return search_chain(first_pass, chain_len, h);
+            cout << "Searching for " << hstr << " in chain starting with " << first_pass << endl;
+            return search_chain(first_pass, chain_len, hstr);
         } else { 
+            
             uint8_t *hash = string2uint8_t(h, 64);
 
             char *pass = reduction(hash, i);
+            // cout << pass << "\t"<< h << endl;
 
             uint8_t *new_h_uint8 = (uint8_t *) malloc(32 * sizeof(uint8_t));
             blake256_hash(new_h_uint8, (uint8_t*) pass, 6);
+            
+            h = uint8_t2string(new_h_uint8, 64);
 
+            free(pass);
             // fprint_hash(NULL, new_h_uint8, 32);
             // cout << endl;
-            h = uint8_t2string(new_h_uint8, 64);
-            
-            cout << " == " << h << endl;
-
-
         }
         i++;
     }
@@ -107,6 +116,10 @@ int main(int argc, char **argv) {
     size_t table_id;
     size_t num_of_tables = NUM_OF_TABLES;
     size_t chain_len = CHAIN_LEN;
+
+    // uint8_t* lala = create_chain((uint8_t*)"PL5oET", 24);
+    // fprint_hash(NULL, lala, 32);
+    // printf("\n");
 
 	/* for all rainbow tables */    
 	for (table_id = 0 ; table_id < 1 ; table_id++) {
@@ -122,7 +135,7 @@ int main(int argc, char **argv) {
 		while (!file.eof()) {
 			file >> first_pass;
 			file >> last_h;
-	        cout << "PASS:-" << first_pass << "- H:-" << last_h << "-\n";
+	        // cout << "PASS:-" << first_pass << "- H:-" << last_h << "-\n";
 	        chain_dict.insert(make_pair(last_h, first_pass));
 		}
 
