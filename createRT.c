@@ -37,9 +37,16 @@ uint8_t* rand_string(int size) {
     return str;
 }
 
-char* reduction(uint8_t* h) {
+char* reduction(uint8_t* h, size_t step) {
     unsigned char sha1hash[SHA_DIGEST_LENGTH];
-    SHA1(h, sizeof(h), sha1hash);
+
+    uint8_t *newh = malloc(34 * sizeof(uint8_t));
+    memcpy(newh, h, 32);
+    newh[32] = step;
+    newh[33] = '\0';
+
+    SHA1(newh, sizeof(newh), sha1hash);
+    free(newh);
     char* pass = calloc(7, sizeof(char));
     pass[6] = '\0';
     Base64encode(pass, sha1hash, 6);
@@ -60,12 +67,12 @@ void fprint_hash(FILE* fp, const uint8_t *h, int len) {
 }
 
 uint8_t* create_chain(const uint8_t* initPass, size_t chainLen) {
-    int i;
+    size_t i;
     uint8_t *h = (uint8_t *) malloc(32 * sizeof(uint8_t));
     blake256_hash(h, initPass, 6);
     // printf("%s, ", initPass); fprint_hash(h, 32); printf("\n");
     for (i = 1 ; i < chainLen ; i++) {
-        char *pass = reduction(h);   /* reduction(h) = pass*/
+        char *pass = reduction(h, i);   /* reduction(h) = pass*/
         blake256_hash(h, (uint8_t*) pass, 6);      /* blake(pass) = h */
         // printf("%s, ", pass); fprint_hash(h, 32); printf("\n");
         free(pass);
@@ -86,7 +93,7 @@ void create_RT(size_t rainbow_size, size_t table_id, size_t chain_len) {
         uint8_t *str = rand_string(6);
         uint8_t *h = create_chain(str, chain_len); // total of 2048 links
 
-        fprintf(fp, "%s, ", str);
+        fprintf(fp, "%s\t", str);
         fprint_hash(fp, h, 32);
         if (i < rainbow_size-1)
         	fprintf(fp, "\n");
