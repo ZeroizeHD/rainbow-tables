@@ -12,7 +12,7 @@ rainbow: $(OBJS)
 	$(CPP) -o $(OUT2) rainbowAttack.o createRT.o blake256.o $(FLAGS) 
 
 rainbowAttack.o: rainbowAttack.cpp createRT.c blake.h createRT.h
-	$(CPP) -c rainbowAttack.cpp -O3
+	$(CPP) -c rainbowAttack.cpp -O3 -fopenmp
 
 mainRT.o: mainRT.c createRT.c blake.h createRT.h
 	$(CC) -c mainRT.c -O3 -fopenmp

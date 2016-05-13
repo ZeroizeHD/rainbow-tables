@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-#define RAINBOW_SIZE 1000
-#define NUM_OF_TABLES 2
-#define CHAIN_LEN 1024 /* total of 2048 links*/
+#define RAINBOW_SIZE 10000
+#define NUM_OF_TABLES 4
+#define CHAIN_LEN 2000 /* total of 2048 links*/
 
 static const char basis_64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@";
 
