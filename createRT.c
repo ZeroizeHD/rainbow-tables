@@ -37,21 +37,43 @@ uint8_t* rand_string(int size) {
     return str;
 }
 
+unsigned long djb2(char* str) {
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *str++) != 0) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+    return hash;
+}
+
 char* reduction(uint8_t* h, size_t step) {
-    unsigned char sha1hash[SHA_DIGEST_LENGTH];
+    unsigned long hash = djb2(h);
+    unsigned long hashtep = labs(hash + step);  /* avoid overflow with (long) abs */
 
-    uint8_t *newh = malloc(34 * sizeof(uint8_t));
-    memcpy(newh, h, 32);
-    newh[32] = step;
-    newh[33] = '\0';
-
-    SHA1(newh, sizeof(newh), sha1hash);
-    free(newh);
-    char* pass = calloc(7, sizeof(char));
+    char* pass = malloc(7 * sizeof(char));
+    int i;
+    for (i = 0; i < 6; ++i) {
+        hashtep /= 64;
+        pass[i] = basis_64[hashtep % 64];
+    }    
     pass[6] = '\0';
-    Base64encode(pass, sha1hash, 6);
+
     return pass;
 }
+
+// char* reduction(uint8_t* h, size_t step) {
+//     unsigned char sha1hash[SHA_DIGEST_LENGTH];
+//     uint8_t *newh = malloc(34 * sizeof(uint8_t));
+//     memcpy(newh, h, 32);
+//     newh[32] = step;
+//     newh[33] = '\0';
+//     SHA1(newh, sizeof(newh), sha1hash);
+//     free(newh);
+//     char* pass = calloc(7, sizeof(char));
+//     pass[6] = '\0';
+//     Base64encode(pass, sha1hash, 6);
+//     return pass;
+// }
 
 void fprint_hash(FILE* fp, const uint8_t *h, int len) {
     int i;
@@ -70,11 +92,11 @@ uint8_t* create_chain(const uint8_t* initPass, size_t chainLen) {
     size_t i;
     uint8_t *h = (uint8_t *) malloc(32 * sizeof(uint8_t));
     blake256_hash(h, initPass, 6);
-    // printf("%s, ", initPass); fprint_hash(h, 32); printf("\n");
+    // printf("%s\n", initPass);
     for (i = 1 ; i < chainLen ; i++) {
         char *pass = reduction(h, i);   /* reduction(h) = pass*/
+        // printf("%s\n", pass);
         blake256_hash(h, (uint8_t*) pass, 6);      /* blake(pass) = h */
-        // printf("%s, ", pass); fprint_hash(h, 32); printf("\n");
         free(pass);
     }
     return h;
