@@ -22,7 +22,7 @@ unsigned long djb2(char* str, size_t len) {
     return hash;
 }
 
-char* reduction(uint8_t* h, size_t step) {
+char* reduce(uint8_t* h, size_t step) {
     unsigned long hash = djb2(h, 32);
 
     char* pass = malloc(7 * sizeof(char));
@@ -56,7 +56,7 @@ uint8_t* create_chain(const uint8_t* initPass, size_t chainLen) {
     blake256_hash(h, initPass, 6);
     // printf("%s\n", initPass);
     for (i = 1 ; i < chainLen ; i++) {
-        char *pass = reduction(h, i);   /* reduction(h) = pass*/
+        char *pass = reduce(h, i);   /* reduce(h) = pass*/
         // printf("%s\n", pass);
         blake256_hash(h, (uint8_t*) pass, 6);      /* blake(pass) = h */
         free(pass);

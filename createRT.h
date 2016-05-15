@@ -11,7 +11,7 @@ static const char basis_64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv
 
 uint8_t* rand_string(int);
 unsigned long djb2(char *, size_t);
-char* reduction(uint8_t *, size_t);
+char* reduce(uint8_t *, size_t);
 void fprint_hash(FILE *, const uint8_t *, int);
 uint8_t* create_chain(const uint8_t *, size_t);
 void create_RT(size_t, size_t, size_t);

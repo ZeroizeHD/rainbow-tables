@@ -67,7 +67,7 @@ char* search_chain(string first_pass_str, size_t chain_len, string hass2find) {
     while (hass2find.compare(h) != 0) {
         free(pass);
         uint8_t *hash = string2uint8_t(h, 64);
-        pass = reduction(hash, i);
+        pass = reduce(hash, i);
         blake256_hash(h_uint8, (uint8_t *) pass, 6);
         h = uint8_t2string(h_uint8, 64);
         if (i >= CHAIN_LEN) {
@@ -99,7 +99,7 @@ char* search_RT(string hstr64, map<string, string> chain_dict, size_t chain_len)
         for (int j = i ; j < chain_len ; j++) {
 
             uint8_t *temp_hash32 = string2uint8_t(h64, 64);
-            char *pass = reduction(temp_hash32, j);
+            char *pass = reduce(temp_hash32, j);
             blake256_hash(temp_hash32, (uint8_t *) pass, 6);
             free(pass);
             h64 = uint8_t2string(temp_hash32, 64);
@@ -112,22 +112,69 @@ char* search_RT(string hstr64, map<string, string> chain_dict, size_t chain_len)
     return NULL;
 }
 
+// int main(int argc, char **argv) {
+//     size_t table_id;
+//     size_t num_of_tables = NUM_OF_TABLES;
+//     size_t chain_len = CHAIN_LEN;
+
+    
+// #pragma omp parallel for  /* search parallel in all rainbow tables */  
+//     for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
+//         map<string, string> chain_dict;   
+//         char table_name[15];
+//         sprintf(table_name, "rainbow_%zu.csv", table_id);
+
+//         /* create hash-map for quick checking and retrieving the first link of the chain */
+//         ifstream file(table_name);
+//         string first_pass, last_h;
+//         while (!file.eof()) {
+//             file >> first_pass;
+//             file >> last_h;
+//             chain_dict.insert(make_pair(last_h, first_pass));
+//         }
+//     string h_str;
+// #pragma omp shared(h_str)
+//     {
+
+//             // #pragma omp single copyprivate(h_str)
+//             // {
+//             if (table_id == 0) {
+
+//                 cout << "Enter" << endl;
+//                 cin >> h_str;
+//             }
+//             // }
+//         cout << table_id<< ":" << h_str << endl;
+//     }
+//         // }
+//         while (1) {
+
+//             char* passwd = search_RT(h_str, chain_dict, chain_len);
+//             if (passwd == NULL) {
+//                 cout << "Thread " << table_id << " didnt manage to find the password for " << h_str << "\n";
+//             } else {
+//                 cout << "Thread " << table_id << " found: " << passwd << "\n";
+//             }
+//             break;
+//             // cout << "Enter" << endl;
+//             // cin >> h_str;
+//         }
+//     }
+
+//     return EXIT_SUCCESS;
+// }
+
 int main(int argc, char **argv) {
     size_t table_id;
     size_t num_of_tables = NUM_OF_TABLES;
     size_t chain_len = CHAIN_LEN;
 
-    string h_str;
-    ifstream file2("input-hashes.csv");
-
     
-#pragma omp parallel for  /* search parallel in all rainbow tables */  
+    map<string, string> chain_dict;   
     for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
-        map<string, string> chain_dict;   
         char table_name[15];
         sprintf(table_name, "rainbow_%zu.csv", table_id);
 
-        /* create hash-map for quick checking and retrieving the first link of the chain */
         ifstream file(table_name);
         string first_pass, last_h;
         while (!file.eof()) {
@@ -136,15 +183,24 @@ int main(int argc, char **argv) {
             chain_dict.insert(make_pair(last_h, first_pass));
         }
 
-        while (!file2.eof()) {
-            file2 >> h_str;
-            char* passwd = search_RT(h_str, chain_dict, chain_len);
-            if (passwd == NULL) {
-                cout << "Thread " << table_id << " didnt manage to find the password" << "\n";
-            } else {
-                cout << "Thread " << table_id << " found: " << passwd << "\n";
-            }
+        cout << "Finish inserting from " << table_name << endl;
+    }
+
+    cout << "Inserting to map finished" << endl;
+
+    string h_str;
+    cout << "Enter a hash to search:";
+    cin >> h_str;
+    while (1) {
+
+        char* passwd = search_RT(h_str, chain_dict, chain_len);
+        if (passwd == NULL) {
+            cout << "Unable to find the password for " << h_str << "\n";
+        } else {
+            cout << "Found password for " << h_str << " : " << passwd << "\n";
         }
+        cout << "\nEnter another hash to search:";
+        cin >> h_str;
     }
 
     return EXIT_SUCCESS;
