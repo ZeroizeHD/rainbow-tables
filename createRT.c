@@ -1,32 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <openssl/sha.h>
 #include "blake.h"
 #include "createRT.h"
-
-void Base64encode(char *encoded, const char *string, int len) {
-    int i;
-    char *p = encoded;
-    for (i = 0; i < len - 2; i += 3) {
-        *p++ = basis_64[(string[i] >> 2) & 0x3F];
-        *p++ = basis_64[((string[i] & 0x3) << 4) | ((int) (string[i + 1] & 0xF0) >> 4)];
-        *p++ = basis_64[((string[i + 1] & 0xF) << 2) | ((int) (string[i + 2] & 0xC0) >> 6)];
-        *p++ = basis_64[string[i + 2] & 0x3F];
-    }
-    if (i < len) {
-        *p++ = basis_64[(string[i] >> 2) & 0x3F];
-        if (i == (len - 1)) {
-            *p++ = basis_64[((string[i] & 0x3) << 4)];
-            *p++ = '=';
-        } else {
-            *p++ = basis_64[((string[i] & 0x3) << 4) | ((int) (string[i + 1] & 0xF0) >> 4)];
-            *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
-        }
-        *p++ = '=';
-    }
-    *p++ = '\0';
-    encoded[len] = '\0';
-}
 
 uint8_t* rand_string(int size) {
     int i;
@@ -42,7 +17,6 @@ unsigned long djb2(char* str, size_t len) {
     int c;
     while (len--) {
         c = *str++;
-    // while ((c = *str++) != 0) {
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     }
     return hash;
@@ -50,13 +24,10 @@ unsigned long djb2(char* str, size_t len) {
 
 char* reduction(uint8_t* h, size_t step) {
     unsigned long hash = djb2(h, 32);
-    // unsigned long hashtep = labs(hash + step);  /* avoid overflow with (long) abs */
 
     char* pass = malloc(7 * sizeof(char));
     int i;
     for (i = 0; i < 6; ++i) {
-        // hashtep /= 64;
-        // pass[i] = basis_64[hashtep % 64];
         hash = (hash / 64) + ((61*step) % 64);
         pass[i] = basis_64[(hash % 64)];
     }
@@ -64,20 +35,6 @@ char* reduction(uint8_t* h, size_t step) {
 
     return pass;
 }
-
-// char* reduction(uint8_t* h, size_t step) {
-//     unsigned char sha1hash[SHA_DIGEST_LENGTH];
-//     uint8_t *newh = malloc(34 * sizeof(uint8_t));
-//     memcpy(newh, h, 32);
-//     newh[32] = step;
-//     newh[33] = '\0';
-//     SHA1(newh, sizeof(newh), sha1hash);
-//     free(newh);
-//     char* pass = calloc(7, sizeof(char));
-//     pass[6] = '\0';
-//     Base64encode(pass, sha1hash, 6);
-//     return pass;
-// }
 
 void fprint_hash(FILE* fp, const uint8_t *h, int len) {
     int i;
