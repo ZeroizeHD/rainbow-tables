@@ -37,25 +37,29 @@ uint8_t* rand_string(int size) {
     return str;
 }
 
-unsigned long djb2(char* str) {
+unsigned long djb2(char* str, size_t len) {
     unsigned long hash = 5381;
     int c;
-    while ((c = *str++) != 0) {
+    while (len--) {
+        c = *str++;
+    // while ((c = *str++) != 0) {
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     }
     return hash;
 }
 
 char* reduction(uint8_t* h, size_t step) {
-    unsigned long hash = djb2(h);
-    unsigned long hashtep = labs(hash + step);  /* avoid overflow with (long) abs */
+    unsigned long hash = djb2(h, 32);
+    // unsigned long hashtep = labs(hash + step);  /* avoid overflow with (long) abs */
 
     char* pass = malloc(7 * sizeof(char));
     int i;
     for (i = 0; i < 6; ++i) {
-        hashtep /= 64;
-        pass[i] = basis_64[hashtep % 64];
-    }    
+        // hashtep /= 64;
+        // pass[i] = basis_64[hashtep % 64];
+        hash = (hash / 64) + ((61*step) % 64);
+        pass[i] = basis_64[(hash % 64)];
+    }
     pass[6] = '\0';
 
     return pass;
@@ -90,7 +94,8 @@ void fprint_hash(FILE* fp, const uint8_t *h, int len) {
 
 uint8_t* create_chain(const uint8_t* initPass, size_t chainLen) {
     size_t i;
-    uint8_t *h = (uint8_t *) malloc(32 * sizeof(uint8_t));
+    uint8_t *h = (uint8_t *) malloc(33 * sizeof(uint8_t));
+    h[32] = '\0';
     blake256_hash(h, initPass, 6);
     // printf("%s\n", initPass);
     for (i = 1 ; i < chainLen ; i++) {
