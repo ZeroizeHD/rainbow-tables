@@ -3,7 +3,7 @@ OUT1    = rt.out
 OUT2    = attack.out
 CC      = gcc
 CPP		= g++
-FLAGS   = -g3 -O3 -Wall -lssl -lcrypto -fopenmp
+FLAGS   = -g3 -O3 -Wall -fopenmp
 
 all: rainbow
 
