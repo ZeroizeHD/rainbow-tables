@@ -3,16 +3,16 @@ OUT1    = rt.out
 OUT2    = attack.out
 CC      = gcc
 CPP		= g++
-FLAGS   = -g3 -O3 -Wall -fopenmp
+FLAGS   = -g3 -O3 -Wall
 
 all: rainbow
 
 rainbow: $(OBJS)
-	$(CC) -o $(OUT1) mainRT.o createRT.o blake256.o $(FLAGS)
+	$(CC) -o $(OUT1) mainRT.o createRT.o blake256.o $(FLAGS) -fopenmp
 	$(CPP) -std=c++11 -o $(OUT2) rainbowAttack.o createRT.o blake256.o $(FLAGS) 
 
 rainbowAttack.o: rainbowAttack.cpp createRT.c blake.h createRT.h
-	$(CPP) -std=c++11 -c rainbowAttack.cpp -O3 -fopenmp
+	$(CPP) -std=c++11 -c rainbowAttack.cpp -O3
 
 mainRT.o: mainRT.c createRT.c blake.h createRT.h
 	$(CC) -c mainRT.c -O3 -fopenmp

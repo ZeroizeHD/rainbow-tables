@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <stdio.h>
 #include <stdlib.h>
-#include <omp.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -55,6 +54,29 @@ string uint8_t2string(uint8_t * h_uint8, size_t len) {
     return h;
 }
 
+// void search_chain(string first_pass_str, size_t chain_len, string hass2find) {
+//     uint8_t *h_uint8 = (uint8_t *) malloc(33 * sizeof(uint8_t));
+//     char *pass = (char *) malloc(7 * sizeof(char));
+//     char *tmp = &first_pass_str[0];
+//     memcpy(pass, tmp, 7);
+//     pass[6] = '\0';
+//     blake256_hash(h_uint8, (uint8_t *) pass, 6);
+//     string h = uint8_t2string(h_uint8, 64);
+//     size_t i = 1;
+//     while (hass2find.compare(h) != 0) {
+//         free(pass);
+//         uint8_t *hash = string2uint8_t(h, 64);
+//         pass = reduce(hash, i);
+//         blake256_hash(h_uint8, (uint8_t *) pass, 6);
+//         h = uint8_t2string(h_uint8, 64);
+//         if (i >= CHAIN_LEN) {
+//             return ;
+//         }
+//         i++;
+//     }
+//     cout << "\n\nEUREKA!!!!!\n" << hass2find << " : " << pass << "\n\n" ;
+// };
+
 void search_chain(string first_pass_str, size_t chain_len, string hass2find) {
     uint8_t *h_uint8 = (uint8_t *) malloc(33 * sizeof(uint8_t));
     char *pass = (char *) malloc(7 * sizeof(char));
@@ -62,27 +84,25 @@ void search_chain(string first_pass_str, size_t chain_len, string hass2find) {
     memcpy(pass, tmp, 7);
     pass[6] = '\0';
     blake256_hash(h_uint8, (uint8_t *) pass, 6);
-    string h = uint8_t2string(h_uint8, 64);
+
+    uint8_t *chass2find = string2uint8_t(hass2find, 64);
     size_t i = 1;
-    while (hass2find.compare(h) != 0) {
-        free(pass);
-        uint8_t *hash = string2uint8_t(h, 64);
-        pass = reduce(hash, i);
+    while (memcmp(h_uint8, chass2find, 32)) {
+        reduce(pass, h_uint8, i);
         blake256_hash(h_uint8, (uint8_t *) pass, 6);
-        h = uint8_t2string(h_uint8, 64);
         if (i >= CHAIN_LEN) {
             return ;
         }
         i++;
     }
     cout << "\n\nEUREKA!!!!!\n" << hass2find << " : " << pass << "\n\n" ;
+    free(pass);
 };
-
-
 
 char* search_RT(string hstr64, unordered_map<string, string> chain_dict, size_t chain_len) {
     string h64 = hstr64;
     int i = chain_len-1;
+    char *pass = (char*) malloc(7 * sizeof(char));
     while (i >= 0) {
         string first_pass = chain_dict[h64];
         h64 = hstr64;
@@ -93,15 +113,15 @@ char* search_RT(string hstr64, unordered_map<string, string> chain_dict, size_t 
         for (int j = i ; j < chain_len ; j++) {
 
             uint8_t *temp_hash32 = string2uint8_t(h64, 64);
-            char *pass = reduce(temp_hash32, j);
+            reduce(pass, temp_hash32, j);
             blake256_hash(temp_hash32, (uint8_t *) pass, 6);
-            free(pass);
             h64 = uint8_t2string(temp_hash32, 64);
             free(temp_hash32);
 
         }
         i--;
     }
+    free(pass);
     return NULL;
 }
 
