@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define RAINBOW_SIZE 1000000
-#define NUM_OF_TABLES 2
+#define NUM_OF_TABLES 1
 #define CHAIN_LEN 1500
 
 static const char basis_64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@";

@@ -109,9 +109,14 @@ int main(int argc, char **argv) {
     size_t table_id;
     size_t num_of_tables = NUM_OF_TABLES;
     size_t chain_len = CHAIN_LEN;
+    
+    size_t start_table = 0;
+    if (argc > 1) {
+        start_table = atoi(argv[1]);
+    } 
 
     unordered_map<string, string> chain_dict;   
-    for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
+    for (table_id = start_table ; table_id < start_table+num_of_tables ; table_id++) {
         char table_name[15];
         sprintf(table_name, "rainbow_%zu.csv", table_id);
 
