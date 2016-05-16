@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <map>
+#include <unordered_map>
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
@@ -82,7 +82,7 @@ char* search_chain(string first_pass_str, size_t chain_len, string hass2find) {
 
 
 
-char* search_RT(string hstr64, map<string, string> chain_dict, size_t chain_len) {
+char* search_RT(string hstr64, unordered_map<string, string> chain_dict, size_t chain_len) {
     string h64 = hstr64;
     int i = chain_len-1;
 
@@ -120,11 +120,11 @@ char* search_RT(string hstr64, map<string, string> chain_dict, size_t chain_len)
     
 // #pragma omp parallel for  /* search parallel in all rainbow tables */  
 //     for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
-//         map<string, string> chain_dict;   
+//         unordered_map<string, string> chain_dict;   
 //         char table_name[15];
 //         sprintf(table_name, "rainbow_%zu.csv", table_id);
 
-//         /* create hash-map for quick checking and retrieving the first link of the chain */
+//         /* create hash-unordered_map for quick checking and retrieving the first link of the chain */
 //         ifstream file(table_name);
 //         string first_pass, last_h;
 //         while (!file.eof()) {
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
     size_t chain_len = CHAIN_LEN;
 
     
-    map<string, string> chain_dict;   
+    unordered_map<string, string> chain_dict;   
     for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
         char table_name[15];
         sprintf(table_name, "rainbow_%zu.csv", table_id);
@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
         cout << "Finish inserting from " << table_name << endl;
     }
 
-    cout << "Inserting to map finished" << endl;
+    cout << "Inserting to unordered_map finished" << endl;
 
     string h_str;
     cout << "Enter a hash to search:";
