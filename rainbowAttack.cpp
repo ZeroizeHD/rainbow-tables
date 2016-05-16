@@ -55,7 +55,7 @@ string uint8_t2string(uint8_t * h_uint8, size_t len) {
     return h;
 }
 
-char* search_chain(string first_pass_str, size_t chain_len, string hass2find) {
+void search_chain(string first_pass_str, size_t chain_len, string hass2find) {
     uint8_t *h_uint8 = (uint8_t *) malloc(33 * sizeof(uint8_t));
     char *pass = (char *) malloc(7 * sizeof(char));
     char *tmp = &first_pass_str[0];
@@ -71,13 +71,11 @@ char* search_chain(string first_pass_str, size_t chain_len, string hass2find) {
         blake256_hash(h_uint8, (uint8_t *) pass, 6);
         h = uint8_t2string(h_uint8, 64);
         if (i >= CHAIN_LEN) {
-            // fprintf(stderr, "kati malakia egine\n");
-            return NULL;
+            return ;
         }
         i++;
     }
     cout << "\n\nEUREKA!!!!!\n" << hass2find << " : " << pass << "\n\n" ;
-    // exit(EXIT_SUCCESS);
 };
 
 
@@ -85,15 +83,11 @@ char* search_chain(string first_pass_str, size_t chain_len, string hass2find) {
 char* search_RT(string hstr64, unordered_map<string, string> chain_dict, size_t chain_len) {
     string h64 = hstr64;
     int i = chain_len-1;
-
     while (i >= 0) {
-
         string first_pass = chain_dict[h64];
         h64 = hstr64;
         
         if (first_pass != "") {
-            // cout << "Searching for " << hstr64 << " in chain starting with " << first_pass << endl;
-            // if (search_chain(first_pass, chain_len, hstr64) == NULL)
             search_chain(first_pass, chain_len, hstr64);
         }
         for (int j = i ; j < chain_len ; j++) {
@@ -108,68 +102,14 @@ char* search_RT(string hstr64, unordered_map<string, string> chain_dict, size_t 
         }
         i--;
     }
-
     return NULL;
 }
-
-// int main(int argc, char **argv) {
-//     size_t table_id;
-//     size_t num_of_tables = NUM_OF_TABLES;
-//     size_t chain_len = CHAIN_LEN;
-
-    
-// #pragma omp parallel for  /* search parallel in all rainbow tables */  
-//     for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
-//         unordered_map<string, string> chain_dict;   
-//         char table_name[15];
-//         sprintf(table_name, "rainbow_%zu.csv", table_id);
-
-//         /* create hash-unordered_map for quick checking and retrieving the first link of the chain */
-//         ifstream file(table_name);
-//         string first_pass, last_h;
-//         while (!file.eof()) {
-//             file >> first_pass;
-//             file >> last_h;
-//             chain_dict.insert(make_pair(last_h, first_pass));
-//         }
-//     string h_str;
-// #pragma omp shared(h_str)
-//     {
-
-//             // #pragma omp single copyprivate(h_str)
-//             // {
-//             if (table_id == 0) {
-
-//                 cout << "Enter" << endl;
-//                 cin >> h_str;
-//             }
-//             // }
-//         cout << table_id<< ":" << h_str << endl;
-//     }
-//         // }
-//         while (1) {
-
-//             char* passwd = search_RT(h_str, chain_dict, chain_len);
-//             if (passwd == NULL) {
-//                 cout << "Thread " << table_id << " didnt manage to find the password for " << h_str << "\n";
-//             } else {
-//                 cout << "Thread " << table_id << " found: " << passwd << "\n";
-//             }
-//             break;
-//             // cout << "Enter" << endl;
-//             // cin >> h_str;
-//         }
-//     }
-
-//     return EXIT_SUCCESS;
-// }
 
 int main(int argc, char **argv) {
     size_t table_id;
     size_t num_of_tables = NUM_OF_TABLES;
     size_t chain_len = CHAIN_LEN;
 
-    
     unordered_map<string, string> chain_dict;   
     for (table_id = 0 ; table_id < num_of_tables ; table_id++) {
         char table_name[15];
@@ -185,14 +125,12 @@ int main(int argc, char **argv) {
 
         cout << "Finish inserting from " << table_name << endl;
     }
-
     cout << "Inserting to unordered_map finished" << endl;
 
     string h_str;
     cout << "Enter a hash to search:";
     cin >> h_str;
     while (1) {
-
         char* passwd = search_RT(h_str, chain_dict, chain_len);
         if (passwd == NULL) {
             cout << "Unable to find the password for " << h_str << "\n";
