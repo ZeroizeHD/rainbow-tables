@@ -1,6 +1,4 @@
-[![License MIT][badge-license]](LICENSE)
-
-### Rainbow-Tables
+### Rainbow-Tables [![License MIT][badge-license]](LICENSE)
 
 A project for creating rainbow tables and implementing a rainbow-attack, using the blake-256 hash function. 
 
@@ -21,4 +19,4 @@ Just type "make"
 
 
 2015-2016
-[badge-license]: https://img.shields.io/badge/license-MIT-green.svg
+[badge-license]: https://img.shields.io/badge/license-MIT-green.svg?style=flat-square
